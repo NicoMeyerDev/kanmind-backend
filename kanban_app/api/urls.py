@@ -1,12 +1,22 @@
-from django.urls import path, include
-from .views import BoardView, BoardSingleView, TaskView, TaskSingleView
+from django.urls import path 
+from .views import BoardView, BoardSingleView, TaskView, TaskSingleView, AssignedToMeView, ReviewingView, CommentView, CommentSingleView, EmailCheckView
 
 
 urlpatterns = [
-    path("board/",BoardView.as_view()),
-    path("board/<int:pk>/", BoardSingleView.as_view(),name="board-detail"),
+    #urls Boards
+    path("boards/",BoardView.as_view()),
+    path("boards/<int:pk>/", BoardSingleView.as_view(),name="board-detail"),
 
-    path("task/",TaskView.as_view()),
-    path("task/<int:pk>/", TaskSingleView.as_view(),name="task-detail"),
-    
+    #urls Task
+    path("tasks/",TaskView.as_view()),
+    path("tasks/<int:pk>/", TaskSingleView.as_view(),name="task-detail"),
+    path("tasks/assigned-to-me/", AssignedToMeView.as_view()),
+    path("tasks/reviewing/", ReviewingView.as_view()),
+
+    #urls Comment
+    path("tasks/<int:task_id>/comments/",CommentView.as_view()),
+    path("tasks/<int:task_id>/comments/<int:comment_id>/",CommentSingleView.as_view()),
+
+    #url email
+    path("email-check/",EmailCheckView.as_view(),name="email-check" )
 ]    
