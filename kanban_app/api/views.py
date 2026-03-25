@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.contrib.auth.models import User
-#from rest_framework.permissions import IsAuthenticated # späterhinzufügen wenn permissions geschrieben sind.
+from rest_framework.permissions import IsAuthenticated 
+from .permissions import IsAdminForDeleteOrPatchAndReadOnly
 
 from kanban_app.models import Board , Task, Comment
 from kanban_app.api.serializers import BoardSerializer, TaskSerializer, CommentSerializer
@@ -27,6 +28,8 @@ class BoardView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Generic
 class BoardSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin,generics.GenericAPIView,):
     queryset = Board.objects.all()
     serializer_class = BoardSerializer
+    permission_classes = [IsAuthenticated,IsAdminForDeleteOrPatchAndReadOnly]
+
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -37,7 +40,7 @@ class BoardSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.D
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
     
-#Liste aller Tasks
+
 class TaskView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
     """
     List all tasks or create a new task.
@@ -55,6 +58,7 @@ class TaskView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericA
 class TaskSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin,generics.GenericAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated,IsAdminForDeleteOrPatchAndReadOnly]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -67,8 +71,7 @@ class TaskSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.De
 
 #alle Tasks die dem aktuell eingeloggten User zugewiesen sind    
 class AssignedToMeView(generics.ListAPIView):
-    serializer_class = TaskSerializer 
-    #permission_classes = [IsAuthenticated]   
+    serializer_class = TaskSerializer   
 
     def get_queryset(self):
         return Task.objects.filter(assignee=self.request.user)
@@ -76,7 +79,6 @@ class AssignedToMeView(generics.ListAPIView):
 #es werden alle Tasks angezeigt,bei den man als Reviewer eingetragen ist
 class ReviewingView(generics.ListAPIView):
     serializer_class = TaskSerializer
-    #permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Task.objects.filter(reviewers=self.request.user)
@@ -88,6 +90,7 @@ class CommentView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Gener
     """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -120,7 +123,7 @@ class EmailCheckView(APIView):
         email = request.query_params.get("email")
 
         if not email:
-            return Response({"error": "Email ist schon vorhanden"},status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Email ist erforderlich"},status=status.HTTP_400_BAD_REQUEST)
         exists = User.objects.filter(email=email).exists()
 
         return Response(
