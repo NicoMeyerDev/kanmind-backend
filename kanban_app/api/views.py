@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated 
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import IsAdminForDeleteOrPatchAndReadOnly
 
 from kanban_app.models import Board , Task, Comment
@@ -106,9 +106,10 @@ class CommentView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Gener
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, task_id=self.kwargs["task_id"])
 
-class CommentSingleView(mixins.UpdateModelMixin,mixins.DestroyModelMixin,generics.GenericAPIView):
+class CommentSingleView(mixins.DestroyModelMixin,generics.GenericAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated, IsAdminForDeleteOrPatchAndReadOnly]
     lookup_url_kwarg = "comment_id"
 
     def delete(self, request, *args, **kwargs):
@@ -119,8 +120,10 @@ class CommentSingleView(mixins.UpdateModelMixin,mixins.DestroyModelMixin,generic
 
 
 class EmailCheckView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         email = request.query_params.get("email")
+        
 
         if not email:
             return Response({"error": "Email ist erforderlich"},status=status.HTTP_400_BAD_REQUEST)

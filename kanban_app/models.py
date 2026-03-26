@@ -19,7 +19,7 @@ class Board(models.Model):
 class Task(models.Model):
   board = models.ForeignKey(Board,related_name="tasks", on_delete=models.CASCADE)
   title = models.CharField(max_length=50)
-  description = models.TextField( blank=True) #Beschreibung darf frei sein
+  description = models.TextField(blank=True) #Beschreibung darf frei sein
   assignee =models.ForeignKey(User,related_name="assigned_tasks", on_delete= models.SET_NULL, null= True, blank=True)
   reviewers =models.ManyToManyField(User,related_name="review_tasks",blank=True)
   STATUS_CHOICE = [
@@ -32,8 +32,8 @@ class Task(models.Model):
      ("mittel","Mittel"),
      ("hoch","Hoch")
     ]
-  status = models.CharField(max_length=15, choices= STATUS_CHOICE, default="nicht_begonnen")
-  priority = models.CharField(max_length=10, choices= PRIORITY_CHOICE, default="niedrig")
+  status = models.CharField(max_length=15, choices= STATUS_CHOICE, default="Nicht_Begonnen")
+  priority = models.CharField(max_length=10, choices= PRIORITY_CHOICE, default="Niedrig")
 
 
   def __str__(self):

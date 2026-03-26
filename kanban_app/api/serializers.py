@@ -36,11 +36,26 @@ class TaskSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Titel darf nicht leer sein")
         return title
     
+    #Validierung für das Feld "status"
+    def validate_status(self, value):
+        allowed = ["Nicht_Begonnen", "Begonnen", "Erledigt"]
+        if value not in allowed:
+            raise serializers.ValidationError("Ungültiger Status")
+        return value
+    #Validierung für das Feld "priority"
+    def validate_priority(self, value):
+        allowed = ["Niedrig", "Mittel", "Hoch"]
+        if value not in allowed:
+            raise serializers.ValidationError("Ungültige Priorität")
+        return value
+
+
+
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         # Felder für die API
-        fields = ["task", "author", "content", "created_at"]
+        fields = ["id", "task", "author", "content", "created_at"]
         read_only_fields = ["task", "author", "created_at"]
 
 
