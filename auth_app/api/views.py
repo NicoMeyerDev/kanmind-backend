@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 
 from .serializers import RegistrationSerializer
@@ -42,3 +43,9 @@ class CustomLoginView(ObtainAuthToken):
         else:
             data = serializer.errors
         return Response(data)
+    
+class LogoutView(APIView):
+
+    def post(self, request):
+        request.user.auth_token.delete()  # Token löschen
+        return Response({"detail": "Logout erfolgreich. Token wurde gelöscht."}, status=status.HTTP_200_OK)    
