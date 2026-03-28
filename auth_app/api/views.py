@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 
-from .serializers import RegistrationSerializer
+from .serializers import RegistrationSerializer, LoginSerializer  
 
 class RegistrationView(APIView):
     permission_classes = [AllowAny]# Hier allowany weil der nutzer noch nicht auth sein kann
@@ -18,31 +18,36 @@ class RegistrationView(APIView):
             token, created  = Token.objects.get_or_create(user=saved_account)
             data = {
             "token": token.key,
-            "username": saved_account.username,
-            "email": saved_account.email
+            "fullname": saved_account.username,
+            "email": saved_account.email,
+            "user_id": saved_account.id
         }
+            return Response(data, status=201)
         else:
-            data = serializer.errors
-        return Response(data)
+            data= serializer.errors
+            return Response(data, status=400)
+    
 
 class CustomLoginView(ObtainAuthToken):
-    permission_classes = [AllowAny]# Hier allowany weil der nutzer noch nicht auth sein kann
+    permission_classes = [AllowAny]
+    serializer_class = LoginSerializer  
 
     def post(self, request):
-        serializer = self.serializer_class(data= request.data)
+        serializer = self.serializer_class(data=request.data)  
         data = {}
         if serializer.is_valid():
             user = serializer.validated_data["user"]
-            token, created  = Token.objects.get_or_create(user=user)
-            #Hier Möglichkeit der personalisierung um mehr oder weniger infos zurückzugeben
+            token, created = Token.objects.get_or_create(user=user)
             data = {
-            "token": token.key,
-            "username": user.username,
-            "email": user.email
-        }
+                "token": token.key,
+                "fullname": user.username,
+                "email": user.email,
+                "user_id": user.id
+            }
+            return Response(data, status=200) 
         else:
             data = serializer.errors
-        return Response(data)
+            return Response(data, status=400)
     
 class LogoutView(APIView):
 

@@ -5,10 +5,10 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import IsAdminForDeleteOrPatchAndReadOnly
+from .permissions import IsAdminForDeleteOrPatchAndReadOnly, IsBoardMemberOrOwner
 
 from kanban_app.models import Board , Task, Comment
-from kanban_app.api.serializers import BoardSerializer, TaskSerializer, CommentSerializer
+from kanban_app.api.serializers import BoardSerializer, TaskSerializer, CommentSerializer, BoardUpdateSerializer 
 
 #Liste aller Boards
 class BoardView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
@@ -23,12 +23,15 @@ class BoardView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Generic
     
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
+    
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 #Einzelansicht von einem Board
 class BoardSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin,generics.GenericAPIView,):
     queryset = Board.objects.all()
     serializer_class = BoardSerializer
-    permission_classes = [IsAuthenticated,IsAdminForDeleteOrPatchAndReadOnly]
+    permission_classes = [IsAuthenticated,IsBoardMemberOrOwner]
 
 
     def get(self, request, *args, **kwargs):
@@ -39,6 +42,11 @@ class BoardSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.D
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+    
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return BoardUpdateSerializer  
+        return BoardSerializer
     
 
 class TaskView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
@@ -123,16 +131,17 @@ class EmailCheckView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
         email = request.query_params.get("email")
-        
+
 
         if not email:
             return Response({"error": "Email ist erforderlich"},status=status.HTTP_400_BAD_REQUEST)
         exists = User.objects.filter(email=email).exists()
 
-        return Response(
-            {"exists": exists},
-            status=status.HTTP_200_OK
-        )
+        if not User.objects.filter(email=email).exists():
+            return Response({"error": "Email wurde nicht gefunden"}, status=status.HTTP_404_NOT_FOUND)
+
+        user = User.objects.get(email=email)
+        return Response({"id": user.id, "email": user.email, "username": user.username}, status=status.HTTP_200_OK)
 
 
 

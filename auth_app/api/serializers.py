@@ -26,3 +26,22 @@ class RegistrationSerializer(serializers.ModelSerializer):
         account.set_password(pw)
         account.save()
         return account   
+    
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        email = data.get("email")
+        password = data.get("password")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"error": "Email oder Passwort falsch"})
+
+        if not user.check_password(password):
+            raise serializers.ValidationError({"error": "Email oder Passwort falsch"})
+
+        data["user"] = user
+        return data    

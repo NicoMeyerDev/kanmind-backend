@@ -1,22 +1,65 @@
 from rest_framework import serializers
 from kanban_app.models import Board, Task, Comment
+from django.contrib.auth.models import User
 
 # Serializer für das Board-Modell
 # Wandelt Board-Objekte in JSON um und umgekehrt
 class BoardSerializer(serializers.ModelSerializer):
+    member_count = serializers.SerializerMethodField()
+    ticket_count = serializers.SerializerMethodField()
+    tasks_to_do_count = serializers.SerializerMethodField()
+    tasks_high_prio_count = serializers.SerializerMethodField()
+    owner_id = serializers.IntegerField(source="owner.id", read_only=True)
+
     class Meta:
         model = Board
+
         # Felder, die in der API sichtbar
-        fields = ["id", "owner", "members", "title", "description"]
+        fields = ["id", "title", "owner_id", "ticket_count", "tasks_to_do_count", "tasks_high_prio_count", "member_count","members"]
+        read_only_fields = ["owner_id"]
 
-    # Validierung für das Feld "title"
+    # Validierung der einzelnen Felder"
     def validate_title(self, title):
-        title = title.strip()
-
-        # Prüft, ob der Titel leer ist
+        title = title.strip()  # Leerzeichen am Anfang/Ende entfernen
         if not title:
             raise serializers.ValidationError("Titel darf nicht leer sein")
         return title
+    
+    def get_member_count(self, obj):
+        return obj.members.count()
+
+    def get_ticket_count(self, obj):
+        return obj.tasks.count()  
+
+    def get_tasks_to_do_count(self, obj):
+        return obj.tasks.filter(status="to-do").count()
+
+    def get_tasks_high_prio_count(self, obj):
+        return obj.tasks.filter(priority="high").count()
+    
+# Serializer für User-Details in Responses
+class UserSerializer(serializers.ModelSerializer):
+    fullname = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "fullname"]
+
+    def get_fullname(self, obj):
+        return obj.get_full_name() or obj.username
+
+
+# Serializer für Board Update (PATCH)
+class BoardUpdateSerializer(serializers.ModelSerializer):
+    owner_data = UserSerializer(source="owner", read_only=True)
+    members_data = UserSerializer(source="members", many=True, read_only=True)
+
+    class Meta:
+        model = Board
+        fields = ["id", "title", "owner_data", "members_data", "members"]
+        extra_kwargs = {
+            "members": {"write_only": True}  # members nur im Request, nicht im Response
+        }    
 
 
 # Serializer für das Task-Modell
@@ -38,13 +81,13 @@ class TaskSerializer(serializers.ModelSerializer):
     
     #Validierung für das Feld "status"
     def validate_status(self, value):
-        allowed = ["Nicht_Begonnen", "Begonnen", "Erledigt"]
+        allowed = ["to_do", "in_progress", "review"]
         if value not in allowed:
             raise serializers.ValidationError("Ungültiger Status")
         return value
     #Validierung für das Feld "priority"
     def validate_priority(self, value):
-        allowed = ["Niedrig", "Mittel", "Hoch"]
+        allowed = ["low", "medium", "high"]
         if value not in allowed:
             raise serializers.ValidationError("Ungültige Priorität")
         return value
