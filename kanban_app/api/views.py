@@ -3,9 +3,14 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from django.contrib.auth.models import User
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import IsAdminForDeleteOrPatchAndReadOnly, IsBoardMemberOrOwner
+
+from django.contrib.auth.models import User
+
+from .permissions import IsAdminForDeleteOrPatchAndReadOnly, IsBoardMemberOrOwner, IsTaskBoardMember
+
+from django.shortcuts import get_object_or_404
 
 from kanban_app.models import Board , Task, Comment
 from kanban_app.api.serializers import BoardSerializer, TaskSerializer, CommentSerializer, BoardUpdateSerializer 
@@ -98,6 +103,7 @@ class CommentView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Gener
     """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated, IsTaskBoardMember] 
     
 
     def get(self, request, *args, **kwargs):
@@ -106,15 +112,16 @@ class CommentView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Gener
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
     
-    #Filter nach Task
     def get_queryset(self):
+        get_object_or_404(Task, id=self.kwargs["task_id"])
         return Comment.objects.filter(task_id=self.kwargs["task_id"])
     
     #legt fest, wer den Kommentar geschrieben hat
     def perform_create(self, serializer):
+        task = get_object_or_404(Task, id=self.kwargs["task_id"])
         serializer.save(author=self.request.user, task_id=self.kwargs["task_id"])
 
-class CommentSingleView(mixins.DestroyModelMixin,generics.GenericAPIView):
+class CommentSingleView(mixins.DestroyModelMixin, generics.GenericAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsAdminForDeleteOrPatchAndReadOnly]
@@ -122,10 +129,17 @@ class CommentSingleView(mixins.DestroyModelMixin,generics.GenericAPIView):
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
-    
-    def get_queryset(self):
-        return Comment.objects.filter(task_id=self.kwargs["task_id"])
 
+    def get_queryset(self):
+        task_id = self.kwargs["task_id"]
+        comment_id = self.kwargs["comment_id"]
+
+        # Prüfen ob task_id zu comment_id passt
+        if not Comment.objects.filter(id=comment_id, task_id=task_id).exists():
+            raise ValidationError("Der Kommentar gehört nicht zur angegebenen Task.")
+            
+
+        return Comment.objects.filter(task_id=task_id)
 
 class EmailCheckView(APIView):
     permission_classes = [AllowAny]

@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
+from kanban_app.models import Task
 
 #Nur der Admin darf löschen und bearbeiten    
 class IsAdminForDeleteOrPatchAndReadOnly(BasePermission):
@@ -29,3 +30,24 @@ class IsBoardMemberOrOwner(BasePermission):
             return True
         # Sonst 403
         return False         
+    
+class IsTaskBoardMember(BasePermission):
+    """
+    Prüft ob der User Mitglied oder Owner des Boards ist,
+    zu dem die Task gehört.
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        task_id = view.kwargs.get("task_id")
+        try:
+            task = Task.objects.select_related("board").get(id=task_id)
+        except Task.DoesNotExist:
+            return False  
+        
+        board = task.board
+        return (
+            board.owner == request.user or
+            board.members.filter(id=request.user.id).exists()
+        )    
