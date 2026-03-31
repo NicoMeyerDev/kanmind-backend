@@ -8,12 +8,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from django.contrib.auth.models import User
 
-from .permissions import IsAdminForDeleteOrPatchAndReadOnly, IsBoardMemberOrOwner, IsTaskBoardMember
+from .permissions import  IsTaskBoardMemberOrBoardOwner, IsBoardMemberOrOwner, IsTaskBoardMember, IsCommentAuthor
 
 from django.shortcuts import get_object_or_404
 
 from kanban_app.models import Board , Task, Comment
-from kanban_app.api.serializers import BoardSerializer, TaskSerializer, CommentSerializer, BoardUpdateSerializer 
+from kanban_app.api.serializers import BoardSerializer, BoardDetailSerializer, TaskSerializer, CommentSerializer, BoardUpdateSerializer 
 
 #Liste aller Boards
 class BoardView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
@@ -40,7 +40,7 @@ class BoardView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Generic
 #Einzelansicht von einem Board
 class BoardSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin,generics.GenericAPIView,):
     queryset = Board.objects.all()
-    serializer_class = BoardSerializer
+    serializer_class = BoardDetailSerializer
     permission_classes = [IsAuthenticated,IsBoardMemberOrOwner]
 
 
@@ -55,8 +55,8 @@ class BoardSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.D
     
     def get_serializer_class(self):
         if self.request.method == "PATCH":
-            return BoardUpdateSerializer  
-        return BoardSerializer
+            return BoardUpdateSerializer
+        return BoardDetailSerializer
     
 
 class TaskView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
@@ -77,7 +77,7 @@ class TaskView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericA
 class TaskSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin,generics.GenericAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated,IsAdminForDeleteOrPatchAndReadOnly]
+    permission_classes = [IsAuthenticated, IsTaskBoardMemberOrBoardOwner]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -109,7 +109,7 @@ class CommentView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Gener
     """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated, IsTaskBoardMember] 
+    permission_classes = [IsAuthenticated] 
     
 
     def get(self, request, *args, **kwargs):
@@ -130,7 +130,7 @@ class CommentView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Gener
 class CommentSingleView(mixins.DestroyModelMixin, generics.GenericAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated, IsAdminForDeleteOrPatchAndReadOnly]
+    permission_classes = [IsAuthenticated, IsCommentAuthor]
     lookup_url_kwarg = "comment_id"
 
     def delete(self, request, *args, **kwargs):
@@ -160,7 +160,7 @@ class EmailCheckView(APIView):
         except User.DoesNotExist:
             return Response({"error": "Email wurde nicht gefunden"}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response({"id": user.id, "email": user.email, "username": user.username}, status=status.HTTP_200_OK)
+        return Response({"id": user.id, "email": user.email, "fullname": user.username}, status=status.HTTP_200_OK)
 
 
 

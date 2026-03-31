@@ -15,7 +15,7 @@ class BoardSerializer(serializers.ModelSerializer):
         model = Board
 
         # Felder, die in der API sichtbar
-        fields = ["id", "title", "owner_id", "ticket_count", "tasks_to_do_count", "tasks_high_prio_count", "member_count","members"]
+        fields = ["id", "title","member_count", "ticket_count", "tasks_to_do_count", "tasks_high_prio_count", "owner_id"]
         read_only_fields = ["owner_id"]
 
     # Validierung der einzelnen Felder"
@@ -30,12 +30,14 @@ class BoardSerializer(serializers.ModelSerializer):
 
     def get_ticket_count(self, obj):
         return obj.tasks.count()  
-
+    
     def get_tasks_to_do_count(self, obj):
         return obj.tasks.filter(status="to-do").count()
 
     def get_tasks_high_prio_count(self, obj):
         return obj.tasks.filter(priority="high").count()
+    
+
     
 # Serializer für User-Details in Responses
 class UserSerializer(serializers.ModelSerializer):
@@ -65,10 +67,13 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
 # Serializer für das Task-Modell
 # Zuständig für Umwandlung zwischen DB und JSON
 class TaskSerializer(serializers.ModelSerializer):
+    comments_count = serializers.SerializerMethodField()
+    reviewer = serializers.SerializerMethodField()
+
     class Meta:
         model = Task
         # Felder für die API
-        fields = ["id", "board", "title", "description", "assignee", "reviewers", "status", "priority", "due_date"]
+        fields = ["id", "board", "title", "description", "assignee", "reviewer", "status", "priority", "due_date", "comments_count"]
 
     # Validierung für das Feld "title"
     def validate_title(self, title):
@@ -81,7 +86,7 @@ class TaskSerializer(serializers.ModelSerializer):
     
     #Validierung für das Feld "status"
     def validate_status(self, value):
-        allowed = ["to-do", "in-progress", "review"]
+        allowed = ["to-do", "in-progress", "done"]
         if value not in allowed:
             raise serializers.ValidationError("Ungültiger Status")
         return value
@@ -91,14 +96,53 @@ class TaskSerializer(serializers.ModelSerializer):
         if value not in allowed:
             raise serializers.ValidationError("Ungültige Priorität")
         return value
+    
+    def get_comments_count(self, obj):
+        return obj.comments.count()
+    
+    def get_reviewer(self, obj):
+        first_reviewer = obj.reviewers.first()
+        if first_reviewer:
+            return UserSerializer(first_reviewer).data
+        return None
+
+class TaskDetailSerializer(serializers.ModelSerializer):
+    assignee = UserSerializer(read_only=True)
+    reviewer = serializers.SerializerMethodField()
+    comments_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Task
+        fields = ["id","title","description","status","priority","assignee","reviewer","due_date","comments_count",]
+
+    def get_reviewer(self, obj):
+        first_reviewer = obj.reviewers.first()
+        if first_reviewer:
+            return UserSerializer(first_reviewer).data
+        return None
+
+    def get_comments_count(self, obj):
+        return obj.comments.count()
 
 
+
+class BoardDetailSerializer(serializers.ModelSerializer):
+    owner_id = serializers.IntegerField(source="owner.id", read_only=True)
+    members = UserSerializer(many=True, read_only=True)
+    tasks = TaskDetailSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Board
+        fields = ["id", "title", "owner_id", "members", "tasks"]
+        
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
         # Felder für die API
-        fields = ["id", "task", "author", "content", "created_at"]
+        fields = ["id", "author", "content", "created_at"]
         read_only_fields = ["task", "author", "created_at"]
 
 
@@ -109,4 +153,6 @@ class CommentSerializer(serializers.ModelSerializer):
         if not content:
             raise serializers.ValidationError("content darf nicht leer sein")
         return content
-        
+
+    def get_author(self, obj):
+        return obj.author.get_full_name() or obj.author.username    

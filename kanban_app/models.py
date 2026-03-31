@@ -21,11 +21,11 @@ class Task(models.Model):
   title = models.CharField(max_length=50)
   description = models.TextField(blank=True) #Beschreibung darf frei sein
   assignee =models.ForeignKey(User,related_name="assigned_tasks", on_delete= models.SET_NULL, null= True, blank=True)
-  reviewers =models.ManyToManyField(User,related_name="review_tasks",blank=True)
+  reviewers =models.ManyToManyField(User,related_name="done_tasks",blank=True)
   STATUS_CHOICE = [
      ("to-do", "to do"),
      ("in-progress", "in progress"),
-     ("review","review")
+     ("done","done")
     ]
   PRIORITY_CHOICE=[
      ("low", "low"),
