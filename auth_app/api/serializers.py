@@ -16,7 +16,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             }
         }
 
-    def create(self):
+    def create(self, validated_data):
         pw= self.validated_data["password"]
         repeated_password = self.validated_data["repeated_password"]
 
