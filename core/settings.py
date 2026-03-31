@@ -41,9 +41,11 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'auth_app',
     'kanban_app',
+    'corsheaders',#
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',#
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -54,6 +56,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
+CORS_ALLOW_ALL_ORIGINS = True #
 
 TEMPLATES = [
     {
@@ -127,5 +130,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ]
+    ],
+    'UNAUTHENTICATED_USER': None, 
 }

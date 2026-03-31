@@ -5,10 +5,11 @@ from django.contrib.auth.models import User
 class RegistrationSerializer(serializers.ModelSerializer):
 
     repeated_password = serializers.CharField(write_only = True)
+    fullname = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "repeated_password"]
+        fields = ["fullname", "email", "password", "repeated_password"]
         extra_kwargs ={
             "password":{
                 "write_only": True
@@ -22,7 +23,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
         if pw != repeated_password:
             raise serializers.ValidationError({"error": "password stimm nicht überein!"})
 
-        account = User(email=self.validated_data["email"], username=self.validated_data["username"])
+        account = User(
+            email=self.validated_data["email"],
+            username=self.validated_data["fullname"]  
+        )
         account.set_password(pw)
         account.save()
         return account   
