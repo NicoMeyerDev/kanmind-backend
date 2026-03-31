@@ -22,6 +22,11 @@ class BoardView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Generic
     """
     queryset = Board.objects.all()
     serializer_class = BoardSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Board.objects.filter(owner=user) | Board.objects.filter(members=user)
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -60,6 +65,7 @@ class TaskView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericA
     """
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -149,12 +155,11 @@ class EmailCheckView(APIView):
 
         if not email:
             return Response({"error": "Email ist erforderlich"},status=status.HTTP_400_BAD_REQUEST)
-        exists = User.objects.filter(email=email).exists()
-
-        if not User.objects.filter(email=email).exists():
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
             return Response({"error": "Email wurde nicht gefunden"}, status=status.HTTP_404_NOT_FOUND)
 
-        user = User.objects.get(email=email)
         return Response({"id": user.id, "email": user.email, "username": user.username}, status=status.HTTP_200_OK)
 
 

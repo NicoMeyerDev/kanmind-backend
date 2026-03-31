@@ -16,12 +16,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
             }
         }
 
-    def save(self):
+    def create(self):
         pw= self.validated_data["password"]
         repeated_password = self.validated_data["repeated_password"]
 
         if pw != repeated_password:
-            raise serializers.ValidationError({"error": "password stimm nicht überein!"})
+            raise serializers.ValidationError({"error": "password stimmen nicht überein!"})
 
         account = User(
             email=self.validated_data["email"],

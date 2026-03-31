@@ -68,7 +68,7 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         # Felder für die API
-        fields = ["id", "board", "title", "description", "assignee", "reviewers", "status", "priority"]
+        fields = ["id", "board", "title", "description", "assignee", "reviewers", "status", "priority", "due_date"]
 
     # Validierung für das Feld "title"
     def validate_title(self, title):
@@ -81,7 +81,7 @@ class TaskSerializer(serializers.ModelSerializer):
     
     #Validierung für das Feld "status"
     def validate_status(self, value):
-        allowed = ["to_do", "in_progress", "review"]
+        allowed = ["to-do", "in-progress", "review"]
         if value not in allowed:
             raise serializers.ValidationError("Ungültiger Status")
         return value
