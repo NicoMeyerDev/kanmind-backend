@@ -140,12 +140,8 @@ class CommentSingleView(mixins.DestroyModelMixin, generics.GenericAPIView):
         task_id = self.kwargs["task_id"]
         comment_id = self.kwargs["comment_id"]
 
-        # Prüfen ob task_id zu comment_id passt
-        if not Comment.objects.filter(id=comment_id, task_id=task_id).exists():
-            raise ValidationError("Der Kommentar gehört nicht zur angegebenen Task.")
-            
-
-        return Comment.objects.filter(task_id=task_id)
+        comment = get_object_or_404(Comment, id=comment_id, task_id=task_id)
+        return Comment.objects.filter(id=comment.id)
 
 class EmailCheckView(APIView):
     permission_classes = [AllowAny]

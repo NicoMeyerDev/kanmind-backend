@@ -69,6 +69,7 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
     reviewer = serializers.SerializerMethodField()
+    assignee = UserSerializer(read_only=True)
 
     class Meta:
         model = Task
