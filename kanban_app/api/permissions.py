@@ -27,14 +27,15 @@ class IsBoardMemberOrOwner(BasePermission):
         return bool(request.user and request.user.is_authenticated)
     
     def has_object_permission(self, request, view, obj):
-        # Ist der User der Owner?
-        if obj.owner == request.user:
-            return True
-        # Ist der User ein Member?
-        if request.user in obj.members.all():
-            return True
-        # Sonst 403
-        return False         
+        #Owner oder Member
+        if request.method == "GET":
+            return obj.owner == request.user or request.user in obj.members.all()
+        #nur Owner
+        if request.method == "DELETE":
+            return obj.owner == request.user
+        #nur Owner
+        if request.method == "PATCH":
+            return obj.owner == request.user
     
 class IsTaskBoardMember(BasePermission):
     """

@@ -15,8 +15,11 @@ class BoardSerializer(serializers.ModelSerializer):
         model = Board
 
         # Felder, die in der API sichtbar
-        fields = ["id", "title","member_count", "ticket_count", "tasks_to_do_count", "tasks_high_prio_count", "owner_id"]
+        fields = ["id", "title", "members", "member_count", "ticket_count", "tasks_to_do_count", "tasks_high_prio_count", "owner_id"]
         read_only_fields = ["owner_id"]
+        extra_kwargs = {
+        "members": {"write_only": True}
+    }
 
     # Validierung der einzelnen Felder"
     def validate_title(self, title):
@@ -68,13 +71,28 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
 # Zuständig für Umwandlung zwischen DB und JSON
 class TaskSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
+
     reviewer = serializers.SerializerMethodField()
+    reviewers = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        many=True,
+        write_only=True,
+        required=False
+    )
+
     assignee = UserSerializer(read_only=True)
+    assignee_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        source="assignee",
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
 
     class Meta:
         model = Task
         # Felder für die API
-        fields = ["id", "board", "title", "description", "assignee", "reviewer", "status", "priority", "due_date", "comments_count"]
+        fields = ["id", "board", "title", "description", "assignee", "assignee_id", "reviewer", "reviewers", "status", "priority", "due_date", "comments_count"]
 
     # Validierung für das Feld "title"
     def validate_title(self, title):
@@ -87,7 +105,7 @@ class TaskSerializer(serializers.ModelSerializer):
     
     #Validierung für das Feld "status"
     def validate_status(self, value):
-        allowed = ["to-do", "in-progress", "done"]
+        allowed = ["to-do", "in-progress", "review", "done"]
         if value not in allowed:
             raise serializers.ValidationError("Ungültiger Status")
         return value

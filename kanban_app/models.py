@@ -25,6 +25,7 @@ class Task(models.Model):
   STATUS_CHOICE = [
      ("to-do", "to do"),
      ("in-progress", "in progress"),
+     ("review", "review"),
      ("done","done")
     ]
   PRIORITY_CHOICE=[

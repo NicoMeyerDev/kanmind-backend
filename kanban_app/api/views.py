@@ -26,8 +26,7 @@ class BoardView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Generic
 
     def get_queryset(self):
         user = self.request.user
-        return Board.objects.filter(owner=user) | Board.objects.filter(members=user)
-
+        return (Board.objects.filter(owner=user) | Board.objects.filter(members=user)).distinct()
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
     
@@ -35,7 +34,9 @@ class BoardView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Generic
         return self.create(request, *args, **kwargs)
     
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        board = serializer.save(owner=self.request.user)
+        board.members.add(self.request.user)
+
 
 #Einzelansicht von einem Board
 class BoardSingleView(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin,generics.GenericAPIView,):
