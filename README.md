@@ -1,81 +1,80 @@
 # 📦 KanMind Backend
 
-Eine REST API für die Verwaltung von Kanban-Boards, gebaut mit Django REST Framework.
+A RESTful backend API for managing Kanban boards, built with Django REST Framework.
 
-## 🛠️ Voraussetzungen
+## 🛠️ Requirements
 
-Stelle sicher, dass folgendes auf deinem Computer installiert ist:
+Make sure the following is installed on your computer:
 
-- [Python 3.x](https://www.python.org/downloads/)
+- [Python 3.12](https://www.python.org/downloads/)
 - [Git](https://git-scm.com/)
 
-## 🚀 Installation – Schritt für Schritt
+## 🚀 Installation – Step by Step
 
-### 1. Repository clonen
+### 1. Clone the repository
 
-Öffne dein Terminal (oder die Eingabeaufforderung) und führe folgenden Befehl aus:
+Open your terminal (or command prompt) and run:
 
 ```bash
 git clone https://github.com/NicoMeyerDev/kanmind-backend
 ```
 
-Danach in den Projektordner wechseln:
+Then navigate into the project folder:
 
 ```bash
 cd kanmind-backend
 ```
 
-### 2. Virtual Environment erstellen & aktivieren
+### 2. Create and activate a virtual environment
 
-Ein Virtual Environment sorgt dafür, dass die installierten Pakete nur für dieses Projekt gelten.
+A virtual environment ensures that the installed packages are only used for this project.
 
-**Virtual Environment erstellen:**
+**Create the virtual environment:**
 ```bash
 python -m venv env
 ```
 
-**Virtual Environment aktivieren:**
+**Activate the virtual environment:**
 
-- Windows:
+- **Windows**
 ```bash
 .\env\Scripts\Activate.ps1
 ```
 
-- Mac/Linux:
+- **Mac/Linux**
 ```bash
 source env/bin/activate
 ```
 
-> ✅ Du erkennst, dass es funktioniert hat, wenn am Anfang deiner Kommandozeile **(env)** steht.
+> ✅ You will know it worked when **(env)** appears at the beginning of your command line.
 
-### 3. Abhängigkeiten installieren
+### 3. Install dependencies
 
-Installiere alle benötigten Pakete aus der `requirements.txt`:
+Install all required packages from `requirements.txt`:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-> ⚠️ Diese Datei ist nicht auf GitHub vorhanden, da sie geheime Daten enthält. Du musst sie manuell erstellen!
+### 4. Set up the database
 
+Since the project uses SQLite, you do **not** need to install a separate database.
 
-### 4. Datenbank einrichten
-
-Da das Projekt SQLite verwendet, musst du **keine** extra Datenbank installieren. Führe einfach folgenden Befehl aus:
+Simply run:
 
 ```bash
 python manage.py migrate
 ```
 
-> ℹ️ Ein `makemigrations` ist **nicht nötig**, da die Migrationsdateien bereits im Projekt enthalten sind. `migrate` reicht aus.
+> ℹ️ Running `makemigrations` is **not necessary**, because the migration files are already included in the project. `migrate` is enough.
 
-### 5. Server starten
+### 5. Start the server
 
 ```bash
 python manage.py runserver
 ```
 
-Die API ist jetzt erreichbar unter:
+The API will then be available at:
 
 ```
 http://127.0.0.1:8000/
