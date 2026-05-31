@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-2+0)m^p+_%#q9*4t64$rvv*#lxggywo1w4m1c8dc%#75yxso!v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    ".onrender.com",
+]
 
 
 # Application definition
@@ -45,8 +49,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',#
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -56,7 +61,15 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
-CORS_ALLOW_ALL_ORIGINS = True #
+CORS_ALLOW_ALL_ORIGINS = True 
+
+#CORS_ALLOW_ALL_ORIGINS = False
+
+#CORS_ALLOWED_ORIGINS = [
+   # "https://dein-frontend-name.onrender.com",
+#] wenn es auf Render läuft ändern
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 TEMPLATES = [
     {
@@ -122,6 +135,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 #globale permission
 REST_FRAMEWORK = {
