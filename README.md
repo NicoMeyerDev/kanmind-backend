@@ -1,6 +1,7 @@
 # 📦 KanMind Backend
 
-A RESTful backend API for managing Kanban boards, built with Django REST Framework.
+KanMind is a Kanban board management application that helps users organize projects, tasks, and workflows. 
+This backend provides a RESTful API built with Django REST Framework for creating, updating, and managing boards, columns, and task cards.
 
 ## 🛠️ Requirements
 
