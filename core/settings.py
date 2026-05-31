@@ -61,13 +61,13 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
-CORS_ALLOW_ALL_ORIGINS = True 
 
-#CORS_ALLOW_ALL_ORIGINS = False
 
-#CORS_ALLOWED_ORIGINS = [
-   # "https://dein-frontend-name.onrender.com",
-#] wenn es auf Render läuft ändern
+CORS_ALLOW_ALL_ORIGINS = False
+
+CORS_ALLOWED_ORIGINS = [
+    "https://kanmind-frontend-jml4.onrender.com/",
+]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
