@@ -1,14 +1,26 @@
 # 📦 KanMind Backend
 
-KanMind is a Kanban board management application that helps users organize projects, tasks, and workflows. 
+KanMind is a Kanban board management application that helps users organize projects, tasks, and workflows.
+
 This backend provides a RESTful API built with Django REST Framework for creating, updating, and managing boards, columns, and task cards.
+
+## 🔗 Related Repositories
+
+| Repository   | Description                                      |
+| ------------ | ------------------------------------------------ |
+| **Frontend** | https://github.com/NicoMeyerDev/kanmind-frontend |
+| **Backend**  | This repository                                  |
+
+KanMind consists of a separate frontend and backend application communicating through a REST API.
+
+---
 
 ## 🛠️ Requirements
 
 Make sure the following is installed on your computer:
 
-- [Python 3.12](https://www.python.org/downloads/)
-- [Git](https://git-scm.com/)
+* [Python 3.12](https://www.python.org/downloads/)
+* [Git](https://git-scm.com/)
 
 ## 🚀 Installation – Step by Step
 
@@ -31,18 +43,21 @@ cd kanmind-backend
 A virtual environment ensures that the installed packages are only used for this project.
 
 **Create the virtual environment:**
+
 ```bash
 python -m venv env
 ```
 
 **Activate the virtual environment:**
 
-- **Windows**
+**Windows**
+
 ```bash
 .\env\Scripts\Activate.ps1
 ```
 
-- **Mac/Linux**
+**Mac/Linux**
+
 ```bash
 source env/bin/activate
 ```
@@ -77,6 +92,7 @@ python manage.py runserver
 
 The API will then be available at:
 
-```
+```text
 http://127.0.0.1:8000/
 ```
+
