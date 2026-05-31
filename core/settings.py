@@ -66,7 +66,7 @@ ROOT_URLCONF = 'core.urls'
 CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
-    "https://kanmind-frontend-jml4.onrender.com/",
+    "https://kanmind-frontend-jml4.onrender.com",
 ]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
