@@ -95,4 +95,11 @@ The API will then be available at:
 ```text
 http://127.0.0.1:8000/
 ```
+---
+## Frontend Repository
 
+Das zugehörige Frontend befindet sich hier:
+
+(https://github.com/NicoMeyerDev/kanmind-frontend)
+
+---
